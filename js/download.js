@@ -1,4 +1,4 @@
-export function downloadFile(blob, filename) {
+function downloadFile(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -9,7 +9,7 @@ export function downloadFile(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
-export async function downloadZip(files) {
+async function downloadZip(files) {
   const zip = new JSZip();
   for (const { name, blob } of files) {
     zip.file(name, blob);

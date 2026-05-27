@@ -2,7 +2,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 10 * 1024 * 1024;
 const MAX_FILES = 10;
 
-export function createUpload(container, options = {}) {
+function createUpload(container, options = {}) {
   const { onFiles, maxFiles = MAX_FILES } = options;
 
   container.innerHTML = `

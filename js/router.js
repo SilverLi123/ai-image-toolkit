@@ -1,11 +1,11 @@
 const routes = {};
 let currentPage = null;
 
-export function registerRoute(path, pageModule) {
+function registerRoute(path, pageModule) {
   routes[path] = pageModule;
 }
 
-export function navigate(path) {
+function navigate(path) {
   window.location.hash = "#/" + path;
 }
 
@@ -26,7 +26,7 @@ function handleRoute() {
   }
 }
 
-export function initRouter() {
+function initRouter() {
   window.addEventListener("hashchange", handleRoute);
   handleRoute();
 }

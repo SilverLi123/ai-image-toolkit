@@ -1,43 +1,39 @@
-import { createUpload } from "./upload.js";
-import { createCompare } from "./compare.js";
-import { loadImage, canvasToBlob, formatFileSize } from "./utils.js";
-import { downloadFile, downloadZip } from "./download.js";
+const compress = (() => {
+  let cleanup = null;
+  let generation = 0;
 
-let cleanup = null;
-let generation = 0;
+  function render(container) {
+    showUpload(container);
+  }
 
-export function render(container) {
-  showUpload(container);
-}
+  function showUpload(container) {
+    doCleanup();
+    container.innerHTML = `<div class="upload-container"></div>`;
+    const uploadArea = container.querySelector(".upload-container");
+    createUpload(uploadArea, {
+      onFiles: (files) => {
+        if (files.length === 1) {
+          showSingleMode(container, files[0]);
+        } else {
+          showBatchMode(container, files);
+        }
+      },
+    });
+  }
 
-function showUpload(container) {
-  doCleanup();
-  container.innerHTML = `<div class="upload-container"></div>`;
-  const uploadArea = container.querySelector(".upload-container");
-  createUpload(uploadArea, {
-    onFiles: (files) => {
-      if (files.length === 1) {
-        showSingleMode(container, files[0]);
-      } else {
-        showBatchMode(container, files);
-      }
-    },
-  });
-}
+  // ── Single Image Mode ──
 
-// ── Single Image Mode ──
+  function showSingleMode(container, file) {
+    const state = {
+      img: null,
+      blob: null,
+      originalUrl: null,
+      compressedUrl: null,
+      compare: null,
+      rafId: null,
+    };
 
-function showSingleMode(container, file) {
-  const state = {
-    img: null,
-    blob: null,
-    originalUrl: null,
-    compressedUrl: null,
-    compare: null,
-    rafId: null,
-  };
-
-  container.innerHTML = `
+    container.innerHTML = `
     <div class="compress-layout">
       <div class="compress-sidebar">
         <button class="btn-back" id="btn-back">← 重新上传</button>
@@ -66,78 +62,78 @@ function showSingleMode(container, file) {
     </div>
   `;
 
-  const origSizeEl = container.querySelector("#orig-size");
-  const compSizeEl = container.querySelector("#comp-size");
-  const qualitySlider = container.querySelector("#quality");
-  const qualityVal = container.querySelector("#quality-val");
-  const downloadBtn = container.querySelector("#btn-download");
-  const previewArea = container.querySelector("#preview-area");
+    const origSizeEl = container.querySelector("#orig-size");
+    const compSizeEl = container.querySelector("#comp-size");
+    const qualitySlider = container.querySelector("#quality");
+    const qualityVal = container.querySelector("#quality-val");
+    const downloadBtn = container.querySelector("#btn-download");
+    const previewArea = container.querySelector("#preview-area");
 
-  const goBack = () => {
-    doCleanup();
-    showUpload(container);
-  };
-  container.querySelector("#btn-back").addEventListener("click", goBack);
-  container.querySelector("#btn-back2").addEventListener("click", goBack);
+    const goBack = () => {
+      doCleanup();
+      showUpload(container);
+    };
+    container.querySelector("#btn-back").addEventListener("click", goBack);
+    container.querySelector("#btn-back2").addEventListener("click", goBack);
 
-  qualitySlider.addEventListener("input", () => {
-    qualityVal.textContent = qualitySlider.value + "%";
-    if (state.rafId) cancelAnimationFrame(state.rafId);
-    state.rafId = requestAnimationFrame(() => doCompress());
-  });
+    qualitySlider.addEventListener("input", () => {
+      qualityVal.textContent = qualitySlider.value + "%";
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      state.rafId = requestAnimationFrame(() => doCompress());
+    });
 
-  downloadBtn.addEventListener("click", () => {
-    if (state.blob) {
-      const name = file.name.replace(/\.[^.]+$/, "");
-      downloadFile(state.blob, `compressed_${name}.jpg`);
+    downloadBtn.addEventListener("click", () => {
+      if (state.blob) {
+        const name = file.name.replace(/\.[^.]+$/, "");
+        downloadFile(state.blob, `compressed_${name}.jpg`);
+      }
+    });
+
+    async function doCompress() {
+      if (!state.img) return;
+      const gen = ++generation;
+      const quality = qualitySlider.value / 100;
+      const blob = await canvasToBlob(state.img, quality);
+      if (!blob || gen !== generation) return;
+      if (state.compressedUrl) URL.revokeObjectURL(state.compressedUrl);
+      state.blob = blob;
+      state.compressedUrl = URL.createObjectURL(blob);
+      state.compare.updateCompressed(state.compressedUrl);
+      compSizeEl.textContent = formatFileSize(blob.size);
+      compSizeEl.className =
+        "size-value" + (blob.size < file.size ? " smaller" : "");
+      downloadBtn.disabled = false;
     }
-  });
 
-  async function doCompress() {
-    if (!state.img) return;
-    const gen = ++generation;
-    const quality = qualitySlider.value / 100;
-    const blob = await canvasToBlob(state.img, quality);
-    if (!blob || gen !== generation) return;
-    if (state.compressedUrl) URL.revokeObjectURL(state.compressedUrl);
-    state.blob = blob;
-    state.compressedUrl = URL.createObjectURL(blob);
-    state.compare.updateCompressed(state.compressedUrl);
-    compSizeEl.textContent = formatFileSize(blob.size);
-    compSizeEl.className =
-      "size-value" + (blob.size < file.size ? " smaller" : "");
-    downloadBtn.disabled = false;
+    cleanup = () => {
+      if (state.compare) state.compare.destroy();
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      if (state.originalUrl) URL.revokeObjectURL(state.originalUrl);
+      if (state.compressedUrl) URL.revokeObjectURL(state.compressedUrl);
+    };
+
+    (async () => {
+      origSizeEl.textContent = formatFileSize(file.size);
+      state.img = await loadImage(file);
+      state.originalUrl = URL.createObjectURL(file);
+      state.compare = createCompare(previewArea, state.originalUrl);
+      await doCompress();
+    })();
   }
 
-  cleanup = () => {
-    if (state.compare) state.compare.destroy();
-    if (state.rafId) cancelAnimationFrame(state.rafId);
-    if (state.originalUrl) URL.revokeObjectURL(state.originalUrl);
-    if (state.compressedUrl) URL.revokeObjectURL(state.compressedUrl);
-  };
+  // ── Batch Mode ──
 
-  (async () => {
-    origSizeEl.textContent = formatFileSize(file.size);
-    state.img = await loadImage(file);
-    state.originalUrl = URL.createObjectURL(file);
-    state.compare = createCompare(previewArea, state.originalUrl);
-    await doCompress();
-  })();
-}
+  function showBatchMode(container, files) {
+    let aborted = false;
+    const results = files.map((f) => ({
+      file: f,
+      thumbUrl: URL.createObjectURL(f),
+      img: null,
+      blob: null,
+      status: "pending",
+    }));
 
-// ── Batch Mode ──
-
-function showBatchMode(container, files) {
-  let aborted = false;
-  const results = files.map((f) => ({
-    file: f,
-    thumbUrl: URL.createObjectURL(f),
-    img: null,
-    blob: null,
-    status: "pending",
-  }));
-
-  container.innerHTML = `
+    container.innerHTML = `
     <div class="compress-layout">
       <div class="compress-sidebar">
         <button class="btn-back" id="btn-back">← 重新上传</button>
@@ -181,80 +177,83 @@ function showBatchMode(container, files) {
     </div>
   `;
 
-  const qualitySlider = container.querySelector("#quality");
-  const qualityVal = container.querySelector("#quality-val");
-  const compressBtn = container.querySelector("#btn-compress");
-  const progressWrap = container.querySelector("#progress-wrap");
-  const progressBar = container.querySelector("#progress-bar");
-  const progressText = container.querySelector("#progress-text");
-  const downloadAllBtn = container.querySelector("#btn-download-all");
+    const qualitySlider = container.querySelector("#quality");
+    const qualityVal = container.querySelector("#quality-val");
+    const compressBtn = container.querySelector("#btn-compress");
+    const progressWrap = container.querySelector("#progress-wrap");
+    const progressBar = container.querySelector("#progress-bar");
+    const progressText = container.querySelector("#progress-text");
+    const downloadAllBtn = container.querySelector("#btn-download-all");
 
-  const goBack = () => {
-    doCleanup();
-    showUpload(container);
-  };
-  container.querySelector("#btn-back").addEventListener("click", goBack);
-  container.querySelector("#btn-back2").addEventListener("click", goBack);
+    const goBack = () => {
+      doCleanup();
+      showUpload(container);
+    };
+    container.querySelector("#btn-back").addEventListener("click", goBack);
+    container.querySelector("#btn-back2").addEventListener("click", goBack);
 
-  qualitySlider.addEventListener("input", () => {
-    qualityVal.textContent = qualitySlider.value + "%";
-  });
+    qualitySlider.addEventListener("input", () => {
+      qualityVal.textContent = qualitySlider.value + "%";
+    });
 
-  compressBtn.addEventListener("click", async () => {
-    compressBtn.disabled = true;
-    progressWrap.classList.remove("hidden");
-    progressText.classList.remove("hidden");
-    const quality = qualitySlider.value / 100;
+    compressBtn.addEventListener("click", async () => {
+      compressBtn.disabled = true;
+      progressWrap.classList.remove("hidden");
+      progressText.classList.remove("hidden");
+      const quality = qualitySlider.value / 100;
 
-    for (let i = 0; i < results.length; i++) {
-      if (aborted) return;
-      progressText.textContent = `正在压缩 ${i + 1} / ${results.length}...`;
-      progressBar.style.width = `${((i + 1) / results.length) * 100}%`;
+      for (let i = 0; i < results.length; i++) {
+        if (aborted) return;
+        progressText.textContent = `正在压缩 ${i + 1} / ${results.length}...`;
+        progressBar.style.width = `${((i + 1) / results.length) * 100}%`;
 
-      const r = results[i];
-      if (!r.img) {
-        r.img = await loadImage(r.file);
+        const r = results[i];
+        if (!r.img) {
+          r.img = await loadImage(r.file);
+        }
+        r.blob = await canvasToBlob(r.img, quality);
+        if (aborted) return;
+
+        const sizeEl = container.querySelector(`#comp-size-${i}`);
+        const statusEl = container.querySelector(`#status-${i}`);
+        sizeEl.innerHTML = ` → <span class="smaller">${formatFileSize(r.blob.size)}</span>`;
+        statusEl.textContent = "已完成";
+        statusEl.className = "batch-status done";
+        r.status = "done";
       }
-      r.blob = await canvasToBlob(r.img, quality);
-      if (aborted) return;
 
-      const sizeEl = container.querySelector(`#comp-size-${i}`);
-      const statusEl = container.querySelector(`#status-${i}`);
-      sizeEl.innerHTML = ` → <span class="smaller">${formatFileSize(r.blob.size)}</span>`;
-      statusEl.textContent = "已完成";
-      statusEl.className = "batch-status done";
-      r.status = "done";
-    }
+      progressText.textContent = `全部完成！共 ${results.length} 张`;
+      downloadAllBtn.classList.remove("hidden");
+    });
 
-    progressText.textContent = `全部完成！共 ${results.length} 张`;
-    downloadAllBtn.classList.remove("hidden");
-  });
+    downloadAllBtn.addEventListener("click", async () => {
+      const zipFiles = results
+        .filter((r) => r.blob)
+        .map((r) => {
+          const name = r.file.name.replace(/\.[^.]+$/, "");
+          return { name: `compressed_${name}.jpg`, blob: r.blob };
+        });
+      await downloadZip(zipFiles);
+    });
 
-  downloadAllBtn.addEventListener("click", async () => {
-    const zipFiles = results
-      .filter((r) => r.blob)
-      .map((r) => {
-        const name = r.file.name.replace(/\.[^.]+$/, "");
-        return { name: `compressed_${name}.jpg`, blob: r.blob };
-      });
-    await downloadZip(zipFiles);
-  });
-
-  cleanup = () => {
-    aborted = true;
-    for (const r of results) {
-      if (r.thumbUrl) URL.revokeObjectURL(r.thumbUrl);
-    }
-  };
-}
-
-function doCleanup() {
-  if (cleanup) {
-    cleanup();
-    cleanup = null;
+    cleanup = () => {
+      aborted = true;
+      for (const r of results) {
+        if (r.thumbUrl) URL.revokeObjectURL(r.thumbUrl);
+      }
+    };
   }
-}
 
-export function destroy() {
-  doCleanup();
-}
+  function doCleanup() {
+    if (cleanup) {
+      cleanup();
+      cleanup = null;
+    }
+  }
+
+  function destroy() {
+    doCleanup();
+  }
+
+  return { render, destroy };
+})();

@@ -1,15 +1,16 @@
-const tools = [
-  {
-    id: "compress",
-    icon: "🖼️",
-    name: "图片压缩",
-    desc: "压缩图片大小，保持画质",
-    gradient: "linear-gradient(135deg, #667eea, #764ba2)",
-  },
-];
+const home = (() => {
+  const tools = [
+    {
+      id: "compress",
+      icon: "🖼️",
+      name: "图片压缩",
+      desc: "压缩图片大小，保持画质",
+      gradient: "linear-gradient(135deg, #667eea, #764ba2)",
+    },
+  ];
 
-export function render(container) {
-  container.innerHTML = `
+  function render(container) {
+    container.innerHTML = `
     <div class="home">
       <h1 class="home-title">AI 图片工具箱</h1>
       <p class="home-subtitle">选择一个工具开始处理你的图片</p>
@@ -28,6 +29,9 @@ export function render(container) {
       </div>
     </div>
   `;
-}
+  }
 
-export function destroy() {}
+  function destroy() {}
+
+  return { render, destroy };
+})();

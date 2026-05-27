@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash \"C:/Users/li333/.claude/plugins/superpowers-repo/skills/brainstorming/scripts/start-server.sh\" --project-dir \"D:/vibe-coding-project/04-ai-image-toolkit\")",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git commit *)",
+      "Bash(git reset *)",
+      "Bash(npx serve *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/)",
+      "Bash(python -m http.server 8080)"
+    ]
+  }
+}

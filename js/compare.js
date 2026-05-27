@@ -1,4 +1,4 @@
-export function createCompare(container, originalSrc) {
+function createCompare(container, originalSrc) {
   container.innerHTML = `
     <div class="compare">
       <div class="compare-labels">

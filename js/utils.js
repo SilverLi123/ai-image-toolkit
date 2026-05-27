@@ -1,4 +1,4 @@
-export function loadImage(file) {
+function loadImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -14,7 +14,7 @@ export function loadImage(file) {
   });
 }
 
-export function canvasToBlob(img, quality, type = "image/jpeg") {
+function canvasToBlob(img, quality, type = "image/jpeg") {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
     canvas.width = img.naturalWidth;
@@ -31,7 +31,7 @@ export function canvasToBlob(img, quality, type = "image/jpeg") {
   });
 }
 
-export function formatFileSize(bytes) {
+function formatFileSize(bytes) {
   if (bytes < 1024) return bytes + " B";
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
