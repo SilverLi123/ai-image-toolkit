@@ -4,6 +4,7 @@ import { loadImage, canvasToBlob, formatFileSize } from "./utils.js";
 import { downloadFile, downloadZip } from "./download.js";
 
 let cleanup = null;
+let generation = 0;
 
 export function render(container) {
   showUpload(container);
@@ -94,14 +95,17 @@ function showSingleMode(container, file) {
 
   async function doCompress() {
     if (!state.img) return;
+    const gen = ++generation;
     const quality = qualitySlider.value / 100;
-    state.blob = await canvasToBlob(state.img, quality);
+    const blob = await canvasToBlob(state.img, quality);
+    if (!blob || gen !== generation) return;
     if (state.compressedUrl) URL.revokeObjectURL(state.compressedUrl);
-    state.compressedUrl = URL.createObjectURL(state.blob);
+    state.blob = blob;
+    state.compressedUrl = URL.createObjectURL(blob);
     state.compare.updateCompressed(state.compressedUrl);
-    compSizeEl.textContent = formatFileSize(state.blob.size);
+    compSizeEl.textContent = formatFileSize(blob.size);
     compSizeEl.className =
-      "size-value" + (state.blob.size < file.size ? " smaller" : "");
+      "size-value" + (blob.size < file.size ? " smaller" : "");
     downloadBtn.disabled = false;
   }
 
@@ -124,6 +128,7 @@ function showSingleMode(container, file) {
 // ── Batch Mode ──
 
 function showBatchMode(container, files) {
+  let aborted = false;
   const results = files.map((f) => ({
     file: f,
     thumbUrl: URL.createObjectURL(f),
@@ -202,6 +207,7 @@ function showBatchMode(container, files) {
     const quality = qualitySlider.value / 100;
 
     for (let i = 0; i < results.length; i++) {
+      if (aborted) return;
       progressText.textContent = `正在压缩 ${i + 1} / ${results.length}...`;
       progressBar.style.width = `${((i + 1) / results.length) * 100}%`;
 
@@ -210,6 +216,7 @@ function showBatchMode(container, files) {
         r.img = await loadImage(r.file);
       }
       r.blob = await canvasToBlob(r.img, quality);
+      if (aborted) return;
 
       const sizeEl = container.querySelector(`#comp-size-${i}`);
       const statusEl = container.querySelector(`#status-${i}`);
@@ -234,6 +241,7 @@ function showBatchMode(container, files) {
   });
 
   cleanup = () => {
+    aborted = true;
     for (const r of results) {
       if (r.thumbUrl) URL.revokeObjectURL(r.thumbUrl);
     }
