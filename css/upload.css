@@ -1,1 +1,57 @@
-/* upload.css - placeholder, will be implemented in a later task */
+.upload-zone {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius);
+  padding: 60px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  max-width: 600px;
+  margin: 60px auto;
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+  border-color: var(--brand-start);
+  background: var(--bg-upload);
+}
+
+.upload-zone.dragover {
+  border-style: solid;
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.upload-text {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.upload-link {
+  color: var(--brand-start);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.upload-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.upload-error {
+  display: none;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+[data-theme="dark"] .upload-error {
+  background: #3b1111;
+  color: #f87171;
+}
