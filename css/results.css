@@ -1,1 +1,85 @@
-/* results.css - placeholder, will be implemented in a later task */
+.batch-list {
+  list-style: none;
+}
+
+.batch-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  margin-bottom: 8px;
+  transition: background var(--transition);
+}
+
+.batch-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--checkerboard);
+}
+
+.batch-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.batch-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.batch-sizes {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.batch-sizes .smaller {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.batch-status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.batch-status.pending {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+
+.batch-status.done {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+[data-theme="dark"] .batch-status.done {
+  background: #052e16;
+  color: #4ade80;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  transition: background var(--transition);
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--brand-gradient);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
