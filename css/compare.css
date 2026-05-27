@@ -1,1 +1,74 @@
-/* compare.css - placeholder, will be implemented in a later task */
+.compare {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.compare-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.compare-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--checkerboard);
+  cursor: ew-resize;
+  user-select: none;
+}
+
+.compare-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.compare-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  clip-path: inset(0 0 0 50%);
+}
+
+.compare-overlay .compare-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.compare-slider {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4px;
+  height: 100%;
+  background: white;
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.compare-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  cursor: ew-resize;
+}
