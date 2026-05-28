@@ -62,8 +62,27 @@ const home = (() => {
           )
           .join("")}
       </div>
+      <div class="history-section" id="history-section" style="display:none">
+        <h2 style="font-size:20px;margin-top:40px;margin-bottom:16px">最近处理</h2>
+        <div id="history-list"></div>
+      </div>
     </div>
   `;
+
+    const history = getHistory();
+    if (history.length > 0) {
+      const section = container.querySelector('#history-section');
+      section.style.display = 'block';
+      const list = container.querySelector('#history-list');
+      list.innerHTML = history.map(h => `
+        <div class="history-item">
+          <span class="history-tool">${h.toolName}</span>
+          <span class="history-file">${h.fileName}</span>
+          <span class="history-sizes">${h.originalSize} → ${h.resultSize}</span>
+          <span class="history-time">${timeAgo(h.timestamp)}</span>
+        </div>
+      `).join('');
+    }
   }
 
   function destroy() {}

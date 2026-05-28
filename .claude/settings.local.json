@@ -14,7 +14,11 @@
       "Bash(node --check js/watermark.js)",
       "Bash(node --check js/remove-bg.js)",
       "Bash(node --check js/crop.js)",
-      "Bash(node --check js/enhance.js)"
+      "Bash(node --check js/enhance.js)",
+      "Bash(node --check D:/vibe-coding-project/04-ai-image-toolkit/js/drag-sort.js)",
+      "Bash(node --check D:/vibe-coding-project/04-ai-image-toolkit/js/compress.js)",
+      "Bash(node --check D:/vibe-coding-project/04-ai-image-toolkit/js/convert.js)",
+      "Bash(node --check D:/vibe-coding-project/04-ai-image-toolkit/js/watermark.js)"
     ]
   }
 }

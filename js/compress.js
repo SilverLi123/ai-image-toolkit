@@ -84,6 +84,7 @@ const compress = (() => {
 
     downloadBtn.addEventListener("click", () => {
       if (state.blob) {
+        addHistory('图片压缩', file.name, formatFileSize(file.size), formatFileSize(state.blob.size));
         const name = file.name.replace(/\.[^.]+$/, "");
         downloadFile(state.blob, `compressed_${name}.jpg`);
       }
@@ -185,6 +186,12 @@ const compress = (() => {
     const progressText = container.querySelector("#progress-text");
     const downloadAllBtn = container.querySelector("#btn-download-all");
 
+    const batchList = container.querySelector("#batch-list");
+    enableDragSort(batchList, (oldIdx, newIdx) => {
+      const item = results.splice(oldIdx, 1)[0];
+      results.splice(newIdx, 0, item);
+    });
+
     const goBack = () => {
       doCleanup();
       showUpload(container);
@@ -224,6 +231,7 @@ const compress = (() => {
 
       progressText.textContent = `全部完成！共 ${results.length} 张`;
       downloadAllBtn.classList.remove("hidden");
+      addHistory('批量压缩', files.length + ' 张图片', '-', '-');
     });
 
     downloadAllBtn.addEventListener("click", async () => {

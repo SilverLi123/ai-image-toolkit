@@ -48,6 +48,11 @@ const watermark = (() => {
           <input class="wm-input" type="text" id="wm-text" value="AI 图片工具箱" placeholder="输入水印文字">
         </div>
         <div class="setting-group">
+          <label>水印 Logo（可选）</label>
+          <input type="file" accept="image/*" id="logo-input" class="wm-input" style="padding:4px 8px">
+          <p style="font-size:12px;color:var(--text-secondary);margin-top:4px">上传 Logo 替代文字水印</p>
+        </div>
+        <div class="setting-group">
           <label>位置</label>
           <div class="pos-grid" id="pos-grid">
             ${POSITIONS.map(
@@ -87,6 +92,7 @@ const watermark = (() => {
   `;
 
     const textInput = container.querySelector("#wm-text");
+    const logoInput = container.querySelector("#logo-input");
     const posGrid = container.querySelector("#pos-grid");
     const opacitySlider = container.querySelector("#wm-opacity");
     const opacityVal = container.querySelector("#opacity-val");
@@ -96,6 +102,7 @@ const watermark = (() => {
 
     let selectedPos = "br";
     let rafId = null;
+    let logoImg = null;
 
     const goBack = () => {
       doCleanup();
@@ -127,6 +134,17 @@ const watermark = (() => {
       scheduleUpdate();
     });
 
+    logoInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) {
+        logoImg = null;
+        scheduleUpdate();
+        return;
+      }
+      logoImg = await loadImage(file);
+      scheduleUpdate();
+    });
+
     function scheduleUpdate() {
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => updatePreview());
@@ -138,6 +156,7 @@ const watermark = (() => {
         position: selectedPos,
         opacity: opacitySlider.value / 100,
         sizeRatio: sizeSlider.value / 100,
+        logoImg: logoImg,
       };
     }
 
@@ -171,6 +190,7 @@ const watermark = (() => {
     if (dlBtn) {
       dlBtn.addEventListener("click", () => {
         if (results[0].blob) {
+          addHistory('批量水印', results[0].file.name, formatFileSize(results[0].file.size), formatFileSize(results[0].blob.size));
           const name = results[0].file.name.replace(/\.[^.]+$/, "");
           downloadFile(results[0].blob, `watermarked_${name}.png`);
         }
@@ -210,6 +230,7 @@ const watermark = (() => {
 
         progressText.textContent = `全部完成！共 ${results.length} 张`;
         downloadAllBtn.classList.remove("hidden");
+        addHistory('批量水印', files.length + ' 张图片', '-', '-');
       });
     }
 
@@ -244,6 +265,12 @@ const watermark = (() => {
             .join("")}
         </ul>
       `;
+
+      const batchList = previewArea.querySelector(".batch-list");
+      enableDragSort(batchList, (oldIdx, newIdx) => {
+        const item = results.splice(oldIdx, 1)[0];
+        results.splice(newIdx, 0, item);
+      });
     }
 
     cleanup = () => {
@@ -270,36 +297,66 @@ const watermark = (() => {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0);
 
-    const fontSize = Math.round(img.naturalHeight * opts.sizeRatio);
-    ctx.globalAlpha = opts.opacity;
-    ctx.font = `bold ${fontSize}px sans-serif`;
-    ctx.textBaseline = "middle";
-
-    const pad = fontSize * 1.5;
     const w = canvas.width;
     const h = canvas.height;
 
-    const posMap = {
-      tl: { x: pad, y: pad, align: "left" },
-      tc: { x: w / 2, y: pad, align: "center" },
-      tr: { x: w - pad, y: pad, align: "right" },
-      cl: { x: pad, y: h / 2, align: "left" },
-      cc: { x: w / 2, y: h / 2, align: "center" },
-      cr: { x: w - pad, y: h / 2, align: "right" },
-      bl: { x: pad, y: h - pad, align: "left" },
-      bc: { x: w / 2, y: h - pad, align: "center" },
-      br: { x: w - pad, y: h - pad, align: "right" },
-    };
+    ctx.globalAlpha = opts.opacity;
 
-    const pos = posMap[opts.position];
-    ctx.textAlign = pos.align;
+    if (opts.logoImg) {
+      // Draw Logo watermark
+      const logo = opts.logoImg;
+      const logoW = Math.round(img.naturalHeight * opts.sizeRatio);
+      const scale = logoW / logo.naturalWidth;
+      const logoH = Math.round(logo.naturalHeight * scale);
 
-    ctx.strokeStyle = "rgba(0,0,0,0.5)";
-    ctx.lineWidth = Math.max(1, fontSize / 20);
-    ctx.strokeText(opts.text, pos.x, pos.y);
+      const pad = Math.round(logoW * 0.5);
 
-    ctx.fillStyle = "white";
-    ctx.fillText(opts.text, pos.x, pos.y);
+      const posMap = {
+        tl: { x: pad, y: pad, align: "left" },
+        tc: { x: (w - logoW) / 2, y: pad, align: "center" },
+        tr: { x: w - logoW - pad, y: pad, align: "right" },
+        cl: { x: pad, y: (h - logoH) / 2, align: "left" },
+        cc: { x: (w - logoW) / 2, y: (h - logoH) / 2, align: "center" },
+        cr: { x: w - logoW - pad, y: (h - logoH) / 2, align: "right" },
+        bl: { x: pad, y: h - logoH - pad, align: "left" },
+        bc: { x: (w - logoW) / 2, y: h - logoH - pad, align: "center" },
+        br: { x: w - logoW - pad, y: h - logoH - pad, align: "right" },
+      };
+
+      const pos = posMap[opts.position];
+      ctx.drawImage(logo, pos.x, pos.y, logoW, logoH);
+    } else {
+      // Draw text watermark
+      const fontSize = Math.round(img.naturalHeight * opts.sizeRatio);
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.textBaseline = "middle";
+
+      const pad = fontSize * 1.5;
+
+      const posMap = {
+        tl: { x: pad, y: pad, align: "left" },
+        tc: { x: w / 2, y: pad, align: "center" },
+        tr: { x: w - pad, y: pad, align: "right" },
+        cl: { x: pad, y: h / 2, align: "left" },
+        cc: { x: w / 2, y: h / 2, align: "center" },
+        cr: { x: w - pad, y: h / 2, align: "right" },
+        bl: { x: pad, y: h - pad, align: "left" },
+        bc: { x: w / 2, y: h - pad, align: "center" },
+        br: { x: w - pad, y: h - pad, align: "right" },
+      };
+
+      const pos = posMap[opts.position];
+      ctx.textAlign = pos.align;
+
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = Math.max(1, fontSize / 20);
+      ctx.strokeText(opts.text, pos.x, pos.y);
+
+      ctx.fillStyle = "white";
+      ctx.fillText(opts.text, pos.x, pos.y);
+    }
+
+    ctx.globalAlpha = 1;
 
     return new Promise((resolve) => {
       canvas.toBlob((blob) => resolve(blob), "image/png");
