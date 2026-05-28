@@ -21,6 +21,13 @@ const home = (() => {
       desc: "自定义文字水印，批量添加",
       gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
     },
+    {
+      id: "removebg",
+      icon: "✂️",
+      name: "AI 去背景",
+      desc: "一键去除图片背景",
+      gradient: "linear-gradient(135deg, #43e97b, #38f9d7)",
+    },
   ];
 
   function render(container) {

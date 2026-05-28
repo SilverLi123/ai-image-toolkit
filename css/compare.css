@@ -72,3 +72,20 @@
   pointer-events: auto;
   cursor: ew-resize;
 }
+
+.rbg-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rbg-item {
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.rbg-item .compare-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
