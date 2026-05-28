@@ -193,3 +193,50 @@ input[type="range"]::-moz-range-thumb {
   background: var(--brand-gradient);
   color: white;
 }
+
+.pos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-width: 160px;
+}
+
+.pos-cell {
+  aspect-ratio: 1;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+}
+
+.pos-cell:hover {
+  border-color: var(--brand-start);
+}
+
+.pos-cell.active {
+  border-color: var(--brand-start);
+  background: var(--brand-gradient);
+  color: white;
+}
+
+.wm-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.wm-input:focus {
+  border-color: var(--brand-start);
+}

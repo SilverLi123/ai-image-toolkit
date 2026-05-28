@@ -14,6 +14,13 @@ const home = (() => {
       desc: "JPG / PNG / WebP 互转",
       gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
     },
+    {
+      id: "watermark",
+      icon: "💧",
+      name: "批量水印",
+      desc: "自定义文字水印，批量添加",
+      gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
+    },
   ];
 
   function render(container) {
