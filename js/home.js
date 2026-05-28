@@ -7,6 +7,13 @@ const home = (() => {
       desc: "压缩图片大小，保持画质",
       gradient: "linear-gradient(135deg, #667eea, #764ba2)",
     },
+    {
+      id: "convert",
+      icon: "🔄",
+      name: "格式转换",
+      desc: "JPG / PNG / WebP 互转",
+      gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
+    },
   ];
 
   function render(container) {

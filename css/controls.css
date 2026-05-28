@@ -165,3 +165,31 @@ input[type="range"]::-moz-range-thumb {
 .btn-back:hover {
   color: var(--brand-start);
 }
+
+.format-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.format-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+}
+
+.format-btn:hover {
+  border-color: var(--brand-start);
+}
+
+.format-btn.active {
+  border-color: var(--brand-start);
+  background: var(--brand-gradient);
+  color: white;
+}
