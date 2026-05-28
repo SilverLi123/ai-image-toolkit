@@ -28,6 +28,20 @@ const home = (() => {
       desc: "一键去除图片背景",
       gradient: "linear-gradient(135deg, #43e97b, #38f9d7)",
     },
+    {
+      id: "crop",
+      icon: "✂️",
+      name: "图片裁剪",
+      desc: "自由裁剪图片区域",
+      gradient: "linear-gradient(135deg, #fa709a, #fee140)",
+    },
+    {
+      id: "enhance",
+      icon: "🔮",
+      name: "AI 图片增强",
+      desc: "超分辨率放大，提升清晰度",
+      gradient: "linear-gradient(135deg, #a18cd1, #fbc2eb)",
+    },
   ];
 
   function render(container) {
