@@ -28,6 +28,7 @@ const crop = (() => {
       dragType: null,   // 'create' | 'move' | 'nw' | 'ne' | 'sw' | 'se'
       dragStart: null,
       selStart: null,
+      displayImg: null,
     };
 
     container.innerHTML = `
@@ -68,6 +69,17 @@ const crop = (() => {
     container.querySelector("#btn-back").addEventListener("click", goBack);
     container.querySelector("#btn-back2").addEventListener("click", goBack);
 
+    function getDisplayScale() {
+      const displayImg = state.displayImg;
+      if (!state.img || !displayImg || !displayImg.clientWidth || !displayImg.clientHeight) {
+        return null;
+      }
+      return {
+        scaleX: state.img.naturalWidth / displayImg.clientWidth,
+        scaleY: state.img.naturalHeight / displayImg.clientHeight,
+      };
+    }
+
     function updateSelInfo() {
       if (!state.sel) {
         selSizeEl.textContent = "-";
@@ -83,8 +95,9 @@ const crop = (() => {
         return;
       }
       // Convert display coords to real image coords
-      const scaleX = state.img.naturalWidth / state.img.clientWidth;
-      const scaleY = state.img.naturalHeight / state.img.clientHeight;
+      const scale = getDisplayScale();
+      if (!scale) return;
+      const { scaleX, scaleY } = scale;
       const realW = Math.round(s.w * scaleX);
       const realH = Math.round(s.h * scaleY);
       selSizeEl.textContent = realW + " x " + realH;
@@ -104,6 +117,7 @@ const crop = (() => {
       img.src = state.originalUrl;
       img.alt = "裁剪原图";
       img.draggable = false;
+      state.displayImg = img;
       wrap.appendChild(img);
 
       // Selection div
@@ -131,8 +145,9 @@ const crop = (() => {
         selDiv.style.width = s.w + "px";
         selDiv.style.height = s.h + "px";
 
-        const scaleX = state.img.naturalWidth / state.img.clientWidth;
-        const scaleY = state.img.naturalHeight / state.img.clientHeight;
+        const scale = getDisplayScale();
+        if (!scale) return;
+        const { scaleX, scaleY } = scale;
         const realW = Math.round(s.w * scaleX);
         const realH = Math.round(s.h * scaleY);
         infoDiv.classList.remove("hidden");
@@ -290,8 +305,9 @@ const crop = (() => {
     cropBtn.addEventListener("click", () => {
       if (!state.sel || !state.img) return;
       const s = state.sel;
-      const scaleX = state.img.naturalWidth / state.img.clientWidth;
-      const scaleY = state.img.naturalHeight / state.img.clientHeight;
+      const scale = getDisplayScale();
+      if (!scale) return;
+      const { scaleX, scaleY } = scale;
 
       const sx = Math.round(s.x * scaleX);
       const sy = Math.round(s.y * scaleY);
