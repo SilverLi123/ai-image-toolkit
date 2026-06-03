@@ -22,6 +22,10 @@ npx serve .
 
 For AI background removal, the user must provide their own API key (remove.bg or GLM vision model). API keys are entered in the UI, not stored in code.
 
+## Repository Workflow
+
+After completing requested changes in this repository, run the relevant smoke tests, commit the intended changes, and push the current branch unless the user explicitly asks not to.
+
 ## Architecture
 
 Single-page app with client-side routing (`js/router.js`). Each tool is a "page" managed by the router.
